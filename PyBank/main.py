@@ -1,8 +1,11 @@
+#Import from operative system an csv file
 import os
 import csv
-# Ruta del archivo a cargar
+
+# Path to collect data from the Resources folder
 budget_data_csv="PyBank/Resources/budget_data.csv"
-#crear diccionario meses
+
+#directory of months
 months={
     "Jan":0,
     "Feb":0,
@@ -18,9 +21,8 @@ months={
     "Dec":0
 }
 
-#declarar la variable para el total del presupuesto
+#declare the variables
 total=0
-#declarar min-max
 decrease=0
 increase=0
 decrease_date=""
@@ -29,27 +31,29 @@ total_changes=0
 actual_budget=0
 #flat variable
 flat=False
-#abrir el archivo 
+#Read in the CSV file 
 with open(budget_data_csv) as csv_budget_data:
-    # leyendo el archivo en formato csv
+    # Split the data on commas
     csv_reader=csv.reader(csv_budget_data, delimiter=",")
-    # next para saltar la cabecera del csv
-    next(csv_reader)
+    # The next () function returns the next item in the iterator
+    header=next(csv_reader)
+    
     # Read through each row of data after the header
     
     for row in csv_reader:
-        #crear la variable date
+        #create the date variable
         date=row[0]
-        #crear la variable profit_losses
+        #create the profit_losses variable
         Profit_Losses=int(row[1])
-        #definir el numero de caracteres de la fecha a leer
+        #define the number of characters of the date to read
         date_t=date[0:3]
-        #cada vez de apariciones del mes va a sumar 1
+        #calculate the number of occurrences of the months and add 1
         months[date_t]=months[date_t]+1
+        #Calculate the net total amount of "Profit/Losses" over the entire period
         total=total+Profit_Losses
         
         changes_profit_losses=Profit_Losses-actual_budget
-        #para cada uno de los cambios verificar max y min respecto a actual
+        #check max and min (date and profit losses)
         if changes_profit_losses > increase:
             increase=changes_profit_losses
             increase_date=date
@@ -57,23 +61,37 @@ with open(budget_data_csv) as csv_budget_data:
             decrease=changes_profit_losses
             decrease_date=date
         actual_budget=Profit_Losses
-        #excluir en el cambio de presupuesto la primera fila por una bandera
+        #remove the first row by a flag
         if(flat):
             total_changes=total_changes+changes_profit_losses
         else:
             flat=True
-        #extraer los valores del diccionario
+        #extract values from dictionary
     total_months=months.values()
-    # sumar los meses en la variable total meses 
+    # add the months in the variable total months
     total_months=(sum(total_months))
+    #calculate the average
     average=total_changes/(total_months-1)
     average=round(average,2)
-    print("Financial Analysis\n----------------------------")
-    print("Total Months: {}".format(total_months))
-    print("Average Change: ${}".format(average))
-    print("Total: ${}".format(total))
-    print("Greatest Increase in Profits: {} (${})".format(increase_date, increase))
-    print("Greatest Decrease in Profits: {} (${})".format(decrease_date, decrease))
+    
+    # Output
+    
+    output_information = (
+    f"\nFinancial Analysis\n"
+    f"\n-----------------------------\n"
+    f"\nTotal Months: {total_months}\n"
+    f"\nTotal: $ {total}\n"
+    f"\nAverage Change: ${average}%\n"
+    f"\nGreatest Increase in Profits: {increase_date} ({increase})\n"
+    f"\nGreatest Decrease in Profits: {decrease_date} ({decrease})\n"
+    
+)
+
+print(output_information)
+
+#export a text file with the results
+with open("PyBank/analysis/Analysis_PyBank.txt","wt") as file:
+    file.write(output_information)
     
 
     
